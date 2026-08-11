@@ -8,189 +8,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
 <style>
-  :root{
-    --paper: #F1E9D6;
-    --paper-dark: #E6DAC0;
-    --ink: #2B2620;
-    --ridge-far: #6C7F63;
-    --ridge-near: #33453A;
-    --river: #4C6E72;
-    --clay: #A6462E;
-    --gold: #9A7A34;
-    --rule: rgba(43,38,32,0.25);
-  }
-
-  *{ box-sizing: border-box; }
-
-  html{ -webkit-text-size-adjust: 100%; }
-
-  body{
-    margin:0;
-    min-height:100vh;
-    background-color: var(--paper);
-    background-image:
-      radial-gradient(rgba(43,38,32,0.045) 1px, transparent 1px);
-    background-size: 3px 3px;
-    color: var(--ink);
-    font-family: "Source Serif 4", Georgia, serif;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content: flex-start;
-    padding: 0 1.25rem 3rem;
-  }
-
-  @media (prefers-reduced-motion: no-preference){
-    .fade-in{
-      animation: fadeUp 0.9s ease-out both;
-    }
-    .fade-in.delay-1{ animation-delay: .15s; }
-    .fade-in.delay-2{ animation-delay: .3s; }
-    .fade-in.delay-3{ animation-delay: .45s; }
-    @keyframes fadeUp{
-      from{ opacity:0; transform: translateY(10px); }
-      to{ opacity:1; transform: translateY(0); }
-    }
-  }
-
-  .eyebrow{
-    font-family: "Special Elite", monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--ink);
-    opacity: 0.72;
-    margin: 2.4rem 0 1.4rem;
-    text-align:center;
-  }
-
-  .rule{
-    width: 60px;
-    height: 2px;
-    background: var(--clay);
-    border:none;
-    margin: 0 auto 1.6rem;
-  }
-
-  .ridge-wrap{
-    width: 100%;
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  h1{
-    font-family: "Bitter", Georgia, serif;
-    font-weight: 800;
-    font-size: clamp(2.4rem, 7vw, 4.4rem);
-    letter-spacing: -0.01em;
-    line-height: 1.02;
-    text-align:center;
-    margin: 0.6rem 0 0.3rem;
-    color: var(--ink);
-  }
-
-  .tagline{
-    font-style: italic;
-    font-size: clamp(1.02rem, 2.4vw, 1.25rem);
-    max-width: 34ch;
-    text-align:center;
-    margin: 0.4rem auto 0;
-    color: var(--ridge-near);
-    line-height:1.5;
-  }
-
-  .river-divider{
-    width: 100%;
-    max-width: 480px;
-    height: 26px;
-    margin: 2.6rem auto 2.2rem;
-    display:block;
-  }
-
-  .notice{
-    max-width: 46ch;
-    text-align:center;
-    font-size: 1.02rem;
-    line-height: 1.7;
-    color: var(--ink);
-    margin: 0 auto;
-  }
-
-  .notice strong{
-    font-family: "Bitter", serif;
-    font-weight: 700;
-    color: var(--clay);
-  }
-
-  .contact-block{
-    margin-top: 2.6rem;
-    text-align:center;
-  }
-
-  .contact-label{
-    font-family: "Special Elite", monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    opacity: 0.65;
-    display:block;
-    margin-bottom: 0.7rem;
-  }
-
-  .stamp{
-    display:inline-block;
-    font-family: "Bitter", serif;
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: var(--paper);
-    background: var(--ridge-near);
-    padding: 0.65rem 1.5rem;
-    border-radius: 2px;
-    text-decoration:none;
-    letter-spacing: 0.01em;
-    border: 2px solid var(--ink);
-    box-shadow: 3px 3px 0 var(--clay);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .stamp:hover, .stamp:focus-visible{
-    transform: translate(-2px,-2px);
-    box-shadow: 5px 5px 0 var(--clay);
-  }
-
-  .stamp:focus-visible{
-    outline: 2px solid var(--river);
-    outline-offset: 3px;
-  }
-
-  footer{
-    margin-top: 3.4rem;
-    text-align:center;
-    font-family: "Special Elite", monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    color: var(--ink);
-    opacity: 0.55;
-    line-height: 1.8;
-  }
-
-  .frame{
-    width:100%;
-    max-width: 620px;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-    padding: 2.6rem 1rem 2.2rem;
-  }
-
-  @media (max-width: 480px){
-    .eyebrow{ margin-top: 1.6rem; }
-  }
+  /* Homepage-only tweaks: the shared stylesheet uses a slightly smaller
+     .frame and h1 for subpages, so we widen them back out just here. */
+  .frame{ max-width: 620px; }
+  h1{ font-size: clamp(2.4rem, 7vw, 4.4rem); line-height: 1.02; }
+  .tagline{ max-width: 34ch; }
 </style>
 </head>
 <body>
 
-  <p class="eyebrow fade-in">Smith River Press &middot; Southern Virginia</p>
+  <p class="eyebrow fade-in">Smith River Press &middot; Martinsville, Virginia</p>
   <hr class="rule fade-in">
 
   <div class="ridge-wrap fade-in delay-1">
@@ -221,17 +50,100 @@
 
     <div class="contact-block fade-in delay-3">
       <span class="contact-label">Reach the press</span>
-      <a class="stamp" href="mailto:andy@smithriverpress.com">Write to Andy</a>
+
+      <form class="contact-form" id="contact-form" novalidate>
+        <div class="field">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" autocomplete="name" required maxlength="200">
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required maxlength="200">
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" required maxlength="5000"></textarea>
+        </div>
+
+        <!-- Honeypot: hidden from real visitors, often filled in by bots -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="company">Company</label>
+          <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="stamp-btn" id="submit-btn">Send</button>
+        </div>
+
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
     </div>
   </div>
 
   <footer class="fade-in delay-3">
-    Smith River Press &middot; Stories from Southern Virginia <br>
+    Smith River Press &middot; Est. in the Smith River Valley<br>
     &copy; <span id="year"></span> Smith River Press. All rights reserved.
   </footer>
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Set this to the Worker URL printed by `wrangler deploy`
+    // (see the contact-form-worker README for setup steps).
+    const CONTACT_ENDPOINT = "PASTE_YOUR_WORKER_URL_HERE";
+
+    const form = document.getElementById('contact-form');
+    const statusEl = document.getElementById('form-status');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      statusEl.textContent = '';
+      statusEl.className = 'form-status';
+
+      const payload = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        message: form.message.value.trim(),
+        company: form.company.value, // honeypot, should stay empty
+      };
+
+      if (!payload.name || !payload.email || !payload.message) {
+        statusEl.textContent = 'Please fill in every field.';
+        statusEl.classList.add('err');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending…';
+
+      try {
+        const res = await fetch(CONTACT_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.ok) {
+          statusEl.textContent = "Sent. We'll be in touch soon.";
+          statusEl.classList.add('ok');
+          form.reset();
+        } else {
+          statusEl.textContent = data.error || 'Something went wrong. Please try again.';
+          statusEl.classList.add('err');
+        }
+      } catch (err) {
+        statusEl.textContent = 'Could not reach the server. Please try again shortly.';
+        statusEl.classList.add('err');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send';
+      }
+    });
   </script>
 
 </body>
