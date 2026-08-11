@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Henry County Patriot Database — presented by Andy Doss</title>
+<meta name="description" content="A searchable record of Henry County, Virginia residents named in the 1777 Oaths of Allegiance and Revolutionary War service rolls.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="wordmark-row">
+      <svg class="seal seal--brand" viewBox="0 0 64 64" aria-hidden="true">
+        <use href="#scroll-shape"></use>
+        <!--<text x="32" y="36" class="seal-glyph">HC</text>-->
+      </svg>
+      <div class="wordmark">
+        <h1>The Henry County Patriot Database</h1>
+        <p class="subhead">Oaths of Allegiance &amp; Revolutionary War Service &middot; 1777&ndash;1783</p>
+        <p class="byline">Presented by Andy Doss</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Database views">
+      <button class="tab" id="tab-browse" role="tab" aria-selected="true" aria-controls="panel-browse">Browse the Ledger</button>
+      <button class="tab" id="tab-search" role="tab" aria-selected="false" aria-controls="panel-search">Search Records</button>
+    </nav>
+  </div>
+  <div class="brass-rule" aria-hidden="true"></div>
+</header>
+
+<main>
+
+  <!-- ================= BROWSE ================= -->
+  <section id="panel-browse" class="panel" role="tabpanel" aria-labelledby="tab-browse">
+    <div class="toolbar">
+      <p class="result-count" id="browse-count" aria-live="polite"></p>
+      <label class="sort-control">
+        <span>Sort by</span>
+        <select id="browse-sort">
+          <option value="last-asc">Last name, A&ndash;Z</option>
+          <option value="first-asc">First name, A&ndash;Z</option>
+          <option value="source">Source</option>
+        </select>
+      </label>
+    </div>
+
+    <ol class="ledger" id="browse-list" aria-live="polite"></ol>
+
+    <nav class="pager" id="browse-pager" aria-label="Browse pagination"></nav>
+  </section>
+
+  <!-- ================= SEARCH ================= -->
+  <section id="panel-search" class="panel is-hidden" role="tabpanel" aria-labelledby="tab-search">
+
+    <form class="query-slip" id="search-form">
+      <p class="query-slip__label">Query the Record</p>
+      <div class="query-fields">
+        <label class="field">
+          <span>First name</span>
+          <input type="text" id="q-first" name="first" placeholder="e.g. John" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Last name (or search term)</span>
+          <input type="text" id="q-last" name="last" placeholder="e.g. Hall" autocomplete="off">
+        </label>
+        <label class="field field--wide">
+          <span>Service type</span>
+          <select id="q-type" name="type">
+            <option value="">All service types</option>
+          </select>
+        </label>
+      </div>
+      <div class="query-actions">
+        <button type="submit" class="btn btn--primary">Search the Ledger</button>
+        <button type="button" class="btn btn--ghost" id="q-clear">Clear</button>
+      </div>
+    </form>
+
+    <div class="toolbar toolbar--search is-hidden" id="search-toolbar">
+      <p class="result-count" id="search-count" aria-live="polite"></p>
+    </div>
+
+    <ol class="ledger" id="search-list" aria-live="polite"></ol>
+
+    <p class="empty-state is-hidden" id="search-empty">
+      No one by that name or service type appears in the ledger yet. Try a shorter
+      spelling &mdash; many names in these records were spelled several different
+      ways by 18th-century clerks.
+    </p>
+
+    <nav class="pager" id="search-pager" aria-label="Search results pagination"></nav>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>
+    Sources: C.&nbsp;B.&nbsp;Bryant, &ldquo;Henry County. From Its Formation in 1776 to the End
+    of the Eighteenth Century, et seq.,&rdquo; <em>The Virginia Magazine of History and
+    Biography</em>, Vol.&nbsp;9, No.&nbsp;1 (Jul. 1901) &middot; <em>A Proud Look Back</em>
+    Revolutionary War roster, comp. Lela&nbsp;C.&nbsp;Adams.
+  </p>
+  <p class="footer-note">Presented by Andy Doss for the Henry County community. 
+    This information was transcribed as it was found in the original source material.
+    <br/>
+    "Patriotic Service" can mean lots of things: military, government, financial, or some other way of expressing support for Independence."
+    <br/>
+    That means that spelling errors and other notes were purposely preserved. 
+    Some patriots will be found more than once, and sometimes with variances in how their names were spelled.
+    <br> Found an error or have a record to contribute? Reach out &mdash; corrections are always welcome.</p>
+  <p class="footer-note">Compiled in partnership with the YouTube Channel <a href="https://www.youtube.com/@yourhistoryinsight" target="_blank">History In Sight</a>.</p>
+</footer>
+
+<!-- ================= MODAL ================= -->
+<div class="modal-overlay is-hidden" id="modal-overlay">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+    <svg class="seal seal--modal" id="modal-seal" viewBox="0 0 64 64" aria-hidden="true">
+      <use href="#tricorn-shape"></use>
+    </svg>
+    <button class="modal-close" id="modal-close" aria-label="Close record">&times;</button>
+    <h2 id="modal-name"></h2>
+    <p class="modal-meta" id="modal-meta"></p>
+    <div class="modal-tags" id="modal-tags"></div>
+    <dl class="modal-fields" id="modal-fields"></dl>
+    <p class="doss-note is-hidden" id="modal-doss-note"></p>
+    <p class="modal-citation" id="modal-citation"></p>
+  </div>
+</div>
+
+<!-- shared SVG defs: the hand-stamped seal shape, drawn once and reused -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="scroll-shape">
+      <ellipse cx="32" cy="15" rx="17" ry="6.5" />
+      <rect x="21" y="15" width="22" height="34" />
+      <ellipse cx="32" cy="49" rx="17" ry="6.5" />
+    </g>
+    <g id="tricorn-shape">
+      <path d="M 32.00 55.00 C 28.25 55.00 24.35 42.75 20.74 36.50 C 17.13 30.25 8.47 20.75 10.35 17.50 C 12.23 14.25 24.78 17.00 32.00 17.00 C 39.22 17.00 51.77 14.25 53.65 17.50 C 55.53 20.75 46.87 30.25 43.26 36.50 C 39.65 42.75 35.75 55.00 32.00 55.00 Z" />
+      <circle class="tricorn-cockade" cx="32" cy="46" r="3.2" />
+    </g>
+  </defs>
+</svg>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
