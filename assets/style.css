@@ -1,1 +1,220 @@
+/* Smith River Press — shared site styles
+   Used across the homepage and all subpages so everything stays visually
+   consistent. Edit here once and it updates everywhere. */
 
+:root{
+  --paper: #F1E9D6;
+  --paper-dark: #E6DAC0;
+  --ink: #2B2620;
+  --ridge-far: #6C7F63;
+  --ridge-near: #33453A;
+  --river: #4C6E72;
+  --clay: #A6462E;
+  --gold: #9A7A34;
+  --rule: rgba(43,38,32,0.25);
+}
+
+*{ box-sizing: border-box; }
+
+html{ -webkit-text-size-adjust: 100%; }
+
+body{
+  margin:0;
+  min-height:100vh;
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(43,38,32,0.045) 1px, transparent 1px);
+  background-size: 3px 3px;
+  color: var(--ink);
+  font-family: "Source Serif 4", Georgia, serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content: flex-start;
+  padding: 0 1.25rem 3rem;
+}
+
+@media (prefers-reduced-motion: no-preference){
+  .fade-in{ animation: fadeUp 0.9s ease-out both; }
+  .fade-in.delay-1{ animation-delay: .15s; }
+  .fade-in.delay-2{ animation-delay: .3s; }
+  .fade-in.delay-3{ animation-delay: .45s; }
+  @keyframes fadeUp{
+    from{ opacity:0; transform: translateY(10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+}
+
+.eyebrow{
+  font-family: "Special Elite", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.72;
+  margin: 2.4rem 0 1.4rem;
+  text-align:center;
+}
+
+.eyebrow a{
+  color: var(--ink);
+}
+
+.rule{
+  width: 60px;
+  height: 2px;
+  background: var(--clay);
+  border:none;
+  margin: 0 auto 1.6rem;
+}
+
+h1{
+  font-family: "Bitter", Georgia, serif;
+  font-weight: 800;
+  font-size: clamp(2.1rem, 6vw, 3.6rem);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  text-align:center;
+  margin: 0.6rem 0 0.3rem;
+  color: var(--ink);
+}
+
+.tagline{
+  font-style: italic;
+  font-size: clamp(1.02rem, 2.4vw, 1.25rem);
+  max-width: 40ch;
+  text-align:center;
+  margin: 0.4rem auto 0;
+  color: var(--ridge-near);
+  line-height:1.5;
+}
+
+.river-divider{
+  width: 100%;
+  max-width: 480px;
+  height: 26px;
+  margin: 2.6rem auto 2.2rem;
+  display:block;
+}
+
+.frame{
+  width:100%;
+  max-width: 680px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 2.6rem 1rem 2.2rem;
+}
+
+.notice{
+  max-width: 52ch;
+  text-align:center;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--ink);
+  margin: 0 auto;
+}
+
+.notice strong{
+  font-family: "Bitter", serif;
+  font-weight: 700;
+  color: var(--clay);
+}
+
+.card-list{
+  max-width: 620px;
+  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap: 1rem;
+}
+
+.card{
+  display:block;
+  text-decoration:none;
+  color: var(--ink);
+  background: var(--paper-dark);
+  border: 1.5px solid var(--rule);
+  border-radius: 3px;
+  padding: 1.1rem 1.3rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover, .card:focus-visible{
+  transform: translate(-2px,-2px);
+  box-shadow: 4px 4px 0 var(--clay);
+}
+
+.card h3{
+  font-family: "Bitter", serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0 0 0.3rem;
+  color: var(--ridge-near);
+}
+
+.card p{
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.card .status{
+  display:inline-block;
+  font-family: "Special Elite", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--clay);
+  margin-top: 0.5rem;
+}
+
+.stamp, .stamp-btn{
+  display:inline-block;
+  font-family: "Bitter", serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--paper);
+  background: var(--ridge-near);
+  padding: 0.65rem 1.5rem;
+  border-radius: 2px;
+  text-decoration:none;
+  letter-spacing: 0.01em;
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--clay);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor:pointer;
+}
+
+.stamp:hover, .stamp:focus-visible,
+.stamp-btn:hover:not(:disabled), .stamp-btn:focus-visible{
+  transform: translate(-2px,-2px);
+  box-shadow: 5px 5px 0 var(--clay);
+}
+
+.stamp:focus-visible, .stamp-btn:focus-visible{
+  outline: 2px solid var(--river);
+  outline-offset: 3px;
+}
+
+.back-link{
+  display:inline-block;
+  margin-top: 2rem;
+  font-family: "Special Elite", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ridge-near);
+  text-decoration: none;
+}
+
+.back-link:hover{ text-decoration: underline; }
+
+footer{
+  margin-top: 3.4rem;
+  text-align:center;
+  font-family: "Special Elite", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.55;
+  line-height: 1.8;
+}
