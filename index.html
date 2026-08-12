@@ -39,6 +39,8 @@
   <h1 class="fade-in delay-1">Smith River Press</h1>
   <p class="tagline fade-in delay-2">Stories carried down from the ridges and hollows of the Blue Ridge foothills.</p>
 
+  <div class="nav-wrap fade-in delay-2" id="nav-dropdown-mount"></div>
+
   <svg class="river-divider fade-in delay-2" viewBox="0 0 480 26" role="presentation" aria-hidden="true">
     <path d="M0,13 C40,3 80,23 120,13 C160,3 200,23 240,13 C280,3 320,23 360,13 C400,3 440,23 480,13" fill="none" stroke="#4C6E72" stroke-width="2"/>
   </svg>
@@ -54,14 +56,10 @@
     </div>
   </div>
 
-  <footer class="fade-in delay-3">
-    Smith River Press &middot; Est. in the Smith River Valley<br>
-    &copy; <span id="year"></span> Smith River Press. All rights reserved.
-  </footer>
+  <footer class="fade-in delay-3" id="site-footer-mount"></footer>
 
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
+  <script src="/assets/nav-data.js"></script>
+  <script src="/assets/site-nav.js"></script>
 
 </body>
 </html>
