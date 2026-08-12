@@ -305,6 +305,109 @@ h1{
   .eyebrow{ margin-top: 1.6rem; }
 }
 
+.nav-dropdown{
+  position: relative;
+  display: inline-block;
+}
+
+.nav-dropdown__toggle{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "Bitter", serif;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--paper);
+  background: var(--ridge-near);
+  padding: 0.55rem 1.2rem;
+  border-radius: 2px;
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--clay);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nav-dropdown__toggle:hover,
+.nav-dropdown__toggle:focus-visible{
+  transform: translate(-2px,-2px);
+  box-shadow: 5px 5px 0 var(--clay);
+}
+
+.nav-dropdown__toggle:focus-visible{
+  outline: 2px solid var(--river);
+  outline-offset: 3px;
+}
+
+.nav-dropdown__chevron{
+  display: inline-block;
+  transition: transform 0.18s ease;
+  font-size: 0.8em;
+}
+
+.nav-dropdown.is-open .nav-dropdown__chevron{
+  transform: rotate(180deg);
+}
+
+.nav-dropdown__menu{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  min-width: 240px;
+  background: var(--paper-dark);
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  box-shadow: 4px 4px 0 var(--clay);
+  padding: 0.4rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  z-index: 20;
+}
+
+.nav-dropdown.is-open .nav-dropdown__menu{
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-dropdown__item{
+  display: block;
+  text-decoration: none;
+  color: var(--ink);
+  padding: 0.7rem 0.8rem;
+  border-radius: 2px;
+  transition: background 0.12s ease;
+}
+
+.nav-dropdown__item:hover,
+.nav-dropdown__item:focus-visible{
+  background: rgba(76,110,114,0.14);
+  outline: none;
+}
+
+.nav-dropdown__item-title{
+  display: block;
+  font-family: "Bitter", serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ridge-near);
+}
+
+.nav-dropdown__item-desc{
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin-top: 0.15rem;
+  color: var(--ink);
+  opacity: 0.85;
+}
+
+.nav-wrap{
+  text-align: center;
+  margin: 1.6rem 0 0;
+}
+
 footer{
   margin-top: 3.4rem;
   text-align:center;
