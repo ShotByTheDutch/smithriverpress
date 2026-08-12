@@ -1,4 +1,4 @@
-/* Smith River Press — shared site styles 
+/* Smith River Press — shared site styles
    Used across the homepage and all subpages so everything stays visually
    consistent. Edit here once and it updates everywhere. */
 
@@ -308,6 +308,8 @@ h1{
 .nav-dropdown{
   position: relative;
   display: inline-block;
+  isolation: isolate;
+  z-index: 30;
 }
 
 .nav-dropdown__toggle{
@@ -340,35 +342,39 @@ h1{
 
 .nav-dropdown__chevron{
   display: inline-block;
-  transition: transform 0.18s ease;
+  transition: transform 0.22s ease;
   font-size: 0.8em;
 }
 
+.nav-dropdown:hover .nav-dropdown__chevron,
 .nav-dropdown.is-open .nav-dropdown__chevron{
   transform: rotate(180deg);
 }
 
 .nav-dropdown__menu{
   position: absolute;
-  top: calc(100% + 10px);
+  top: 100%;
   left: 50%;
-  transform: translateX(-50%) translateY(-6px);
   min-width: 240px;
+  background-color: #E6DAC0;
   background: var(--paper-dark);
   border: 1.5px solid var(--ink);
   border-radius: 3px;
   box-shadow: 4px 4px 0 var(--clay);
-  padding: 0.4rem;
+  padding: 14px 0.4rem 0.4rem;
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top center;
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
-  z-index: 20;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease;
+  z-index: 30;
 }
 
+.nav-dropdown:hover .nav-dropdown__menu,
 .nav-dropdown.is-open .nav-dropdown__menu{
+  transform: translateX(-50%) scaleY(1);
   opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 .nav-dropdown__item{
@@ -406,6 +412,8 @@ h1{
 .nav-wrap{
   text-align: center;
   margin: 1.6rem 0 0;
+  position: relative;
+  z-index: 30;
 }
 
 footer{
