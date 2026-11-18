@@ -50,3 +50,8 @@ h2{font:700 1.4rem/1.25 var(--display);color:var(--pine);margin:2.5rem 0 .75rem}
 
 @media (max-width:520px){body{font-size:1.05rem}main{padding-top:1.75rem}}
 @media print{body{background:#fff}.foot{border:0}}
+
+/* long-form text pages (About) */
+.prose{max-width:34rem;margin:0 auto;text-align:left}
+.prose h2{margin:2rem 0 .5rem;font-size:1.3rem}
+.prose p{margin:0 0 1rem}
