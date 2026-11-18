@@ -106,3 +106,10 @@ main.wide{max-width:56rem}
 
 /* inner-page titles are smaller than the home hero so they stay on one line */
 main > h1{font-size:clamp(2.2rem,5vw,3.4rem)}
+
+/* ---- People (About) ---- */
+.people{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.25rem;margin:0 0 1.5rem}
+.people figure{margin:0}
+.people img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:2px;box-shadow:0 4px 12px rgba(42,43,37,.22)}
+.people figcaption{margin-top:.6rem;text-align:center;font-size:1.05rem}
+.people figcaption strong{font-family:var(--display);color:var(--pine)}
