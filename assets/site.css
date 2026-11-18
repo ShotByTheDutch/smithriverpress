@@ -55,3 +55,5 @@ h2{font:700 1.4rem/1.25 var(--display);color:var(--pine);margin:2.5rem 0 .75rem}
 .prose{max-width:34rem;margin:0 auto;text-align:left}
 .prose h2{margin:2rem 0 .5rem;font-size:1.3rem}
 .prose p{margin:0 0 1rem}
+.prose .shelf{margin:0 0 .5rem}
+.fine-print{font-size:.95rem;font-style:italic;color:var(--muted)}
