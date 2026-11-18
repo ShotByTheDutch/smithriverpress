@@ -2,22 +2,47 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Henry County Patriot Database — presented by Andy Doss</title>
 <meta name="description" content="A searchable record of Henry County, Virginia residents named in the 1777 Oaths of Allegiance and Revolutionary War service rolls.">
+<meta name="theme-color" content="#33453A">
+<link rel="canonical" href="https://smithriverpress.com/apps/patriot-data/henry-county-virginia/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Smith River Press">
+<meta property="og:title" content="The Henry County Patriot Database — presented by Andy Doss">
+<meta property="og:description" content="A searchable record of Henry County, Virginia residents named in the 1777 Oaths of Allegiance and Revolutionary War service rolls.">
+<meta property="og:url" content="https://smithriverpress.com/apps/patriot-data/henry-county-virginia/">
+<meta property="og:image" content="https://smithriverpress.com/og-image.png">
+<meta property="og:image:alt" content="Smith River Press over layered Blue Ridge ridges">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700;800&family=IM+Fell+English:ital@0;1&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="/assets/site-bar.css">
 </head>
 <body>
+
+<a class="srp-skip" href="#main">Skip to content</a>
+<header class="srp-bar">
+  <div class="srp-bar__inner">
+    <a class="srp-brand" href="/"><svg viewBox="0 0 68 40" aria-hidden="true"><path d="M0 26 L14 12 L26 22 L40 6 L54 20 L68 14 V40 H0Z" fill="#8B9A7F"/><path d="M0 32 L16 22 L30 30 L46 18 L68 30 V40 H0Z" fill="#6C7F63"/><path d="M0 38 C12 33 20 40 34 36 C48 32 56 40 68 36 V40 H0Z" fill="#4C6E72"/></svg><span>Smith River Press</span></a>
+    <nav class="srp-nav" aria-label="Main">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/apps/">Apps &amp; Tools</a></li>
+      <li><a href="/apps/patriot-data/henry-county-virginia/" aria-current="page">Patriot Database</a></li>
+    </ul>
+    </nav>
+  </div>
+</header>
 
 <header class="site-header">
   <div class="header-inner">
     <div class="wordmark-row">
       <svg class="seal seal--brand" viewBox="0 0 64 64" aria-hidden="true">
         <use href="#scroll-shape"></use>
-        <!--<text x="32" y="36" class="seal-glyph">HC</text>-->
       </svg>
       <div class="wordmark">
         <h1>The Henry County Patriot Database</h1>
@@ -33,7 +58,7 @@
   <div class="brass-rule" aria-hidden="true"></div>
 </header>
 
-<main>
+<main id="main">
 
   <!-- ================= BROWSE ================= -->
   <section id="panel-browse" class="panel" role="tabpanel" aria-labelledby="tab-browse">
@@ -105,15 +130,17 @@
     Biography</em>, Vol.&nbsp;9, No.&nbsp;1 (Jul. 1901) &middot; <em>A Proud Look Back</em>
     Revolutionary War roster, comp. Lela&nbsp;C.&nbsp;Adams.
   </p>
-  <p class="footer-note">Presented by Andy Doss for the Henry County community. 
+  <p class="footer-note">Presented by Andy Doss for the Henry County community.
     This information was transcribed as it was found in the original source material.
-    <br/>
-    "Patriotic Service" can mean lots of things: military, government, financial, or some other way of expressing support for Independence."
-    <br/>
-    That means that spelling errors and other notes were purposely preserved. 
+    <br>
+    &ldquo;Patriotic Service&rdquo; can mean lots of things: military, government, financial, or some other way of expressing support for Independence.
+    <br>
+    That means that spelling errors and other notes were purposely preserved.
     Some patriots will be found more than once, and sometimes with variances in how their names were spelled.
-    <br> Found an error or have a record to contribute? Reach out &mdash; corrections are always welcome.</p>
-  <p class="footer-note">Compiled in partnership with the YouTube Channel <a href="https://www.youtube.com/@yourhistoryinsight" target="_blank">History In Sight</a>.</p>
+    <br>
+    Found an error or have a record to contribute? <a href="mailto:andy@smithriverpress.com">Reach out</a> &mdash; corrections are always welcome.</p>
+  <p class="footer-note">Compiled in partnership with the YouTube Channel <a href="https://www.youtube.com/@yourhistoryinsight" target="_blank" rel="noopener">History In Sight</a>.</p>
+  <p class="footer-note"><a href="/">&larr; Back to Smith River Press</a> &middot; <a href="/apps/">More Apps &amp; Tools</a></p>
 </footer>
 
 <!-- ================= MODAL ================= -->
@@ -147,7 +174,7 @@
   </defs>
 </svg>
 
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script src="data.js" defer></script>
+<script src="app.js" defer></script>
 </body>
 </html>

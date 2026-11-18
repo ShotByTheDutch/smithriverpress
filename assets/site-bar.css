@@ -1,0 +1,16 @@
+/* Smith River Press — shared top bar.
+   Namespaced (.srp-*) so it can be dropped onto ANY page, including
+   apps that carry their own stylesheet (e.g. the Patriot Database). */
+.srp-skip{position:absolute;left:-9999px;top:0;background:#F1E9D6;color:#33453A;padding:.6rem 1rem;z-index:1000;font:700 .95rem/1 Georgia,serif;text-decoration:none}
+.srp-skip:focus{left:.5rem;top:.5rem}
+.srp-bar{background:#33453A;color:#F1E9D6;font-family:"Bitter",Georgia,"Times New Roman",serif;border-bottom:3px solid #4C6E72}
+.srp-bar__inner{max-width:1100px;margin:0 auto;padding:.55rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.35rem 1.5rem}
+.srp-brand{display:inline-flex;align-items:center;gap:.6rem;color:#F1E9D6;text-decoration:none;font-weight:800;font-size:1.05rem;letter-spacing:.01em}
+.srp-brand svg{width:34px;height:auto;flex:none}
+.srp-nav ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.1rem 1.25rem}
+.srp-nav a{display:inline-block;padding:.35rem 0;color:#F1E9D6;text-decoration:none;font-weight:500;font-size:.95rem;border-bottom:2px solid transparent}
+.srp-nav a:hover{border-bottom-color:rgba(241,233,214,.55)}
+.srp-nav a[aria-current="page"]{border-bottom-color:#F1E9D6;font-weight:700}
+.srp-bar a:focus-visible{outline:2px solid #F1E9D6;outline-offset:3px;border-radius:2px}
+@media (max-width:520px){.srp-bar__inner{justify-content:center;text-align:center}.srp-nav ul{justify-content:center}}
+@media print{.srp-bar,.srp-skip{display:none}}
