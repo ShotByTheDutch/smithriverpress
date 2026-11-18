@@ -10,7 +10,7 @@
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-padding-top:1rem}
 body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);font:400 1.125rem/1.65 var(--serif);text-rendering:optimizeLegibility}
-main{flex:1;width:100%;max-width:40rem;margin:0 auto;padding:2.5rem 1.25rem 3rem;text-align:center}
+main{flex:1;width:100%;max-width:46rem;margin:0 auto;padding:2.5rem 1.25rem 3rem;text-align:center}
 a{color:var(--pine);text-decoration-thickness:1px;text-underline-offset:.18em}
 a:hover{color:var(--river)}
 a:focus-visible,button:focus-visible{outline:3px solid var(--river);outline-offset:3px;border-radius:2px}
@@ -28,10 +28,10 @@ h2{font:700 1.4rem/1.25 var(--display);color:var(--pine);margin:2.5rem 0 .75rem}
   @keyframes settle{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 }
 
-.notice{margin:0 auto 1.75rem;padding:1rem 1.25rem;background:var(--paper-deep);border-left:4px solid var(--river);text-align:left;max-width:34rem}
+.notice{margin:0 auto 1.75rem;padding:1rem 1.25rem;background:var(--paper-deep);border-left:4px solid var(--river);text-align:left;max-width:39rem}
 
 /* the shelf: what is live, in plain list form */
-.shelf{list-style:none;margin:0 auto;padding:0;max-width:34rem;text-align:left}
+.shelf{list-style:none;margin:0 auto;padding:0;max-width:39rem;text-align:left}
 .shelf li{padding:1.1rem 0 1.1rem 1.1rem;border-top:1px solid var(--rule);border-left:4px solid transparent}
 .shelf li:last-child{border-bottom:1px solid var(--rule)}
 .shelf li.is-live{border-left-color:var(--river)}
@@ -52,7 +52,7 @@ h2{font:700 1.4rem/1.25 var(--display);color:var(--pine);margin:2.5rem 0 .75rem}
 @media print{body{background:#fff}.foot{border:0}}
 
 /* long-form text pages (About) */
-.prose{max-width:34rem;margin:0 auto;text-align:left}
+.prose{max-width:39rem;margin:0 auto;text-align:left}
 .prose h2{margin:2rem 0 .5rem;font-size:1.3rem}
 .prose p{margin:0 0 1rem}
 .prose .shelf{margin:0 0 .5rem}
@@ -81,12 +81,12 @@ main.wide{max-width:48rem}
 .buy .fine-print{margin:.75rem 0 0}
 .book .status{margin:0}
 
-.prose--left{max-width:36rem;margin:0 auto}
+.prose--left{max-width:39rem;margin:0 auto}
 .details{display:grid;grid-template-columns:7.5rem 1fr;gap:.5rem 1rem;margin:0}
 .details dt{font-weight:700;color:var(--pine)}
 .details dd{margin:0}
 
-.book-list{list-style:none;margin:0 auto;padding:0;max-width:34rem;text-align:left}
+.book-list{list-style:none;margin:0 auto;padding:0;max-width:39rem;text-align:left}
 .book-list li{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .book-row{display:flex;gap:1.25rem;align-items:center;padding:1.25rem .5rem;color:inherit;text-decoration:none}
 .book-row:hover .book-row__title{color:var(--river);text-decoration:underline}
@@ -103,3 +103,6 @@ main.wide{max-width:48rem}
   .details dd{margin-bottom:.6rem}
 }
 .cover-thumb{display:block;width:92px;height:auto;flex:none;border-radius:2px;box-shadow:0 3px 8px rgba(42,43,37,.25)}
+
+/* inner-page titles are smaller than the home hero so they stay on one line */
+main > h1{font-size:clamp(2.2rem,5vw,3.4rem)}
