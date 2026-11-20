@@ -177,7 +177,7 @@ body.dev #ghostBtn{display:block}
           <li><b>Red cross</b> is health, a <b>gold-edged cross</b> is big health, <b>yellow crates</b> are ammo, and glowing guns are weapons.</li>
           <li><b>Blue armor panel</b> on a wall: walk into it to equip armor. It soaks up 60% of each hit while it lasts. You can only grab it when your armor is below full.</li>
           <li><b>Purple glowing panels</b> teleport you to another one.</li>
-          <li><b>Sealed doors:</b> the room with the portal is shut behind a gloomy door. Shoot the small activation panel beside it, with any weapon and a steady aim, to open it. Monsters inside don't show on the minimap until a door opens.</li>
+          <li><b>Sealed doors:</b> the room with the portal is shut behind a gloomy door. Shoot the small activation panel beside it, with any weapon and a steady aim, to open it. Each door has one panel outside and one inside, and shooting either one opens that door and lights both. Monsters inside don't show on the minimap until a door opens.</li>
           <li><b>Signs:</b> most are just decoration. A sign with a brass knob, a slight tilt and dark seams is a secret door. Touch it and it sinks, revealing a secret room. Every map hides two: one with health, one with the next new weapon and ammo. Other signs may be ambushes.</li>
           
         </ul>
@@ -1108,7 +1108,7 @@ $('devGod').addEventListener('click',()=>{god=!god;syncDev()});
 $('devGhost').addEventListener('click',()=>{toggleGhost();syncDev()});
 $('devGuns').addEventListener('click',()=>{toggleAllW();syncDev();devMsg.textContent=allW?'All 10 weapons unlocked with infinite ammo.':'Back to normal weapons and ammo.'});
 $('devHeal').addEventListener('click',()=>{p.hp=100;p.armor=100;p.ammo=Math.max(p.ammo,80);devMsg.textContent='Health, armor and ammo refilled.'});
-$('devPortal').addEventListener('click',()=>{forcePortal=true;gates.forEach(g=>{if(!g.open){g.open=true;g.sinking=false;map[g.dy*MW+g.dx]=0;map[g.py*MW+g.px]=8;sinkH.delete(g.dy*MW+g.dx)}});devMsg.textContent='Portal unlocked and doors opened for this level.'});
+$('devPortal').addEventListener('click',()=>{forcePortal=true;gates.forEach(g=>{if(!g.open){g.open=true;g.sinking=false;g.cells.forEach(c=>{map[c.dy*MW+c.dx]=0;sinkH.delete(c.dy*MW+c.dx)});g.panels.forEach(pn=>{map[pn.y*MW+pn.x]=8})}});devMsg.textContent='Portal unlocked and doors opened for this level.'});
 $('cfgDone').addEventListener('click',closeCfg);
 $('cfgReset').addEventListener('click',()=>{binds=cloneB(PRESETS.strafe);sens=1;sensEl.value=100;sensV.textContent='100%';listening=null;cfgMsg.textContent='Back to the defaults.';saveCfg();renderRows();updateHint()});
 document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{
@@ -1865,7 +1865,12 @@ function hintLines(k){
     return l;
   }
   if(k==='panel')return [['ACTIVATION PANEL',12,'#ff8a7a'],['SHOOT THE SMALL PANEL TO OPEN THE DOOR BESIDE IT',10,'#ffffff']];
-  if(k==='door')return [['SEALED DOOR',12,'#c9b8a0'],['THE PORTAL ROOM IS BEHIND IT. SHOOT THE PANEL NEXT TO IT.',10,'#ffffff'],['YOU CANNOT SEE INSIDE UNTIL IT OPENS.',10,'#cfd6e0']];
+  if(k==='door'){
+    const inside=sealRoom&&p.x>=sealRoom.x&&p.x<sealRoom.x+sealRoom.w&&p.y>=sealRoom.y&&p.y<sealRoom.y+sealRoom.h;
+    return inside
+      ?[['SEALED DOOR',12,'#c9b8a0'],['SHOOT THE PANEL BESIDE IT TO OPEN IT FROM INSIDE.',10,'#ffffff']]
+      :[['SEALED DOOR',12,'#c9b8a0'],['THE PORTAL ROOM IS BEHIND IT. SHOOT THE PANEL NEXT TO IT.',10,'#ffffff'],['YOU CANNOT SEE INSIDE UNTIL IT OPENS.',10,'#cfd6e0']];
+  }
   return [['PORTAL',12,'#ffe066'],[portalReady()?'THE PORTAL IS OPEN. WALK INTO IT TO GO DEEPER.':'SEALED UNTIL EVERY MONSTER IS DEAD, HIDDEN ONES TOO',10,'#ffffff']];
 }
 function updateHints(dt){
@@ -1889,8 +1894,12 @@ function updateHints(dt){
     }
     for(const q of pads)consider('pad',q.wx+.5,q.wy+.5,q.ox+.5,q.oy+.5,8);
     for(const g of gates){
-      if(!g.open&&map[g.py*MW+g.px]===7)consider('panel',g.px+.5,g.py+.5,g.ax+.5,g.ay+.5,9);
-      if(!g.open&&!g.sinking)consider('door',g.dx+.5,g.dy+.5,g.ax+.5,g.ay+.5,9);
+      if(g.open)continue;
+      for(const pn of g.panels)if(map[pn.y*MW+pn.x]===7)consider('panel',pn.x+.5,pn.y+.5,pn.ox+.5,pn.oy+.5,9);
+      if(!g.sinking)for(const c of g.cells){
+        consider('door',c.dx+.5,c.dy+.5,c.ax+.5,c.ay+.5,9);
+        consider('door',c.dx+.5,c.dy+.5,c.ix+.5,c.iy+.5,9);
+      }
     }
     if(armorPad&&!armorPad.taken)consider('armor',armorPad.wx+.5,armorPad.wy+.5,armorPad.ox+.5,armorPad.oy+.5,8);
     consider('portal',exitPos.x,exitPos.y,exitPos.x,exitPos.y,12);
@@ -2018,6 +2027,75 @@ function sealPortalRoom(rooms){
   gates=[];sealRoom=null;panelBase.clear();
   const R=rooms[rooms.length-1];
   const inR=(x,y)=>x>=R.x&&x<R.x+R.w&&y>=R.y&&y<R.y+R.h;
+  const isOpen=(x,y)=>x>=1&&y>=1&&x<MW-1&&y<MH-1&&map[y*MW+x]===0;
+  const isWall=(x,y)=>x>=1&&y>=1&&x<MW-1&&y<MH-1&&map[y*MW+x]>=1&&map[y*MW+x]<=3;
+  const ent=[];
+  for(let y=R.y-1;y<=R.y+R.h;y++)for(let x=R.x-1;x<=R.x+R.w;x++){
+    if(x<1||y<1||x>=MW-1||y>=MH-1||inR(x,y)||map[y*MW+x]!==0)continue;
+    for(const [nx,ny] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      if(inR(x+nx,y+ny)){ent.push({x,y,nx,ny});break}
+    }
+  }
+  if(!ent.length)return false;
+  const groups=[];
+  for(const e of ent){
+    const gr=groups.find(q=>q.nx===e.nx&&q.ny===e.ny&&q.cells.some(c=>Math.abs(c.x-e.x)+Math.abs(c.y-e.y)===1));
+    if(gr)gr.cells.push(e);else groups.push({nx:e.nx,ny:e.ny,cells:[e]});
+  }
+  if(groups.length>3)return false;
+  const used=new Set(),made=[];
+  for(const gr of groups){
+    const nx=gr.nx,ny=gr.ny,perps=[[-ny,nx],[ny,-nx]];
+    if(Math.random()<.5)perps.reverse();
+    const cells=gr.cells.map(e=>({dx:e.x,dy:e.y,ax:e.x-nx,ay:e.y-ny,ix:e.x+nx,iy:e.y+ny}));
+    if(!cells.every(c=>isOpen(c.ax,c.ay)&&!inR(c.ax,c.ay)))return false;
+    let outP=null;
+    for(const c of cells){
+      for(const [px,py] of perps){
+        const wx=c.ax+px,wy=c.ay+py;
+        if(isWall(wx,wy)&&!used.has(wy*MW+wx)){outP={x:wx,y:wy,v:map[wy*MW+wx],ox:c.ax,oy:c.ay,side:'out'};break}
+      }
+      if(outP)break;
+    }
+    if(!outP)return false;
+    let inP=null;
+    for(let t=1;t<=3&&!inP;t++){
+      for(const c of cells){
+        for(const [px,py] of perps){
+          const wx=c.dx+px*t,wy=c.dy+py*t,ox=wx+nx,oy=wy+ny;
+          if(isWall(wx,wy)&&!used.has(wy*MW+wx)&&inR(ox,oy)&&isOpen(ox,oy)){inP={x:wx,y:wy,v:map[wy*MW+wx],ox,oy,side:'in'};break}
+        }
+        if(inP)break;
+      }
+    }
+    if(!inP)return false;
+    used.add(outP.y*MW+outP.x);used.add(inP.y*MW+inP.x);
+    made.push({cells,panels:[outP,inP],sinking:false,open:false,t:0});
+  }
+  made.forEach(g=>{
+    g.cells.forEach(c=>{map[c.dy*MW+c.dx]=6});
+    g.panels.forEach(pn=>{map[pn.y*MW+pn.x]=7;panelBase.set(pn.y*MW+pn.x,pn.v)});
+  });
+  const seen=new Uint8Array(MW*MH),st=[rooms[0].cy*MW+rooms[0].cx];
+  seen[st[0]]=1;
+  while(st.length){
+    const c=st.pop(),cx=c%MW,cy=(c/MW)|0;
+    for(const [nx,ny] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      const x=cx+nx,y=cy+ny;
+      if(x<0||y<0||x>=MW||y>=MH)continue;
+      const i=y*MW+x;
+      if(seen[i]||map[i]!==0)continue;
+      seen[i]=1;st.push(i);
+    }
+  }
+  for(let i=0;i<rooms.length-1;i++)if(!seen[rooms[i].cy*MW+rooms[i].cx])return false;
+  gates=made;sealRoom={x:R.x,y:R.y,w:R.w,h:R.h};
+  return true;
+}
+function sealPortalRoomOld(rooms){
+  gates=[];sealRoom=null;panelBase.clear();
+  const R=rooms[rooms.length-1];
+  const inR=(x,y)=>x>=R.x&&x<R.x+R.w&&y>=R.y&&y<R.y+R.h;
   const ent=[];
   for(let y=R.y-1;y<=R.y+R.h;y++)for(let x=R.x-1;x<=R.x+R.w;x++){
     if(x<1||y<1||x>=MW-1||y>=MH-1||inR(x,y)||map[y*MW+x]!==0)continue;
@@ -2068,9 +2146,9 @@ function inSealedRoom(x,y){
   return gates.every(g=>!g.open&&!g.sinking);
 }
 function activatePanel(cx,cy){
-  const g=gates.find(q=>q.px===cx&&q.py===cy);
+  const g=gates.find(q=>q.panels.some(pn=>pn.x===cx&&pn.y===cy));
   if(!g||g.sinking||g.open)return;
-  map[cy*MW+cx]=8;g.sinking=true;g.t=0;
+  g.panels.forEach(pn=>{map[pn.y*MW+pn.x]=8});g.sinking=true;g.t=0;
   sfx.panel();sfx.rumble();
   banner={t:2.2,text:'DOOR OPENING'};
 }
@@ -2086,8 +2164,9 @@ function updateGates(dt){
   for(const g of gates){
     if(!g.sinking)continue;
     g.t+=dt;
-    const u=Math.min(1,g.t/1.8),h=1-u*u*(3-2*u),ci=g.dy*MW+g.dx;
-    if(h<=0){g.sinking=false;g.open=true;map[ci]=0;sinkH.delete(ci)}else sinkH.set(ci,h);
+    const u=Math.min(1,g.t/1.8),h=1-u*u*(3-2*u);
+    if(h<=0){g.sinking=false;g.open=true;g.cells.forEach(c=>{map[c.dy*MW+c.dx]=0;sinkH.delete(c.dy*MW+c.dx)})}
+    else g.cells.forEach(c=>sinkH.set(c.dy*MW+c.dx,h));
   }
 }
 function texFor(hit){
