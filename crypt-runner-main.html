@@ -173,7 +173,7 @@ body.dev #ghostBtn{display:block}
         <h2>Bosses (crypt round 5 and up)</h2>
         <ul>
           <li><b>Mirror King</b> reverses your left and right controls. <b>The Blackout</b> turns the lights nearly off. <b>The Prism</b> warps and recolors the view. <b>Molasses Golem</b> slows you down. Their orbs do damage and apply the effect, so dodge them.</li>
-          <li>Bosses shrug off shots from far away or out of sight, taking only a sliver of damage, so close in and keep them in view. Round 11 is the grand finale: all four bosses, each sealed in its own room. Defeat them all to clear the crypt.</li>
+          <li>PlasmaPonger bolts lose most of their punch against bosses from far away or around corners, so use other weapons at range. Round 11 is the grand finale: all four bosses, each sealed in its own room. Only one boss door can be open at a time; defeat that boss before opening the next. Defeat them all to clear the crypt.</li>
         </ul>
         <h2>Weapons (keys 1 to 9 and 0)</h2>
         <ul>
@@ -693,15 +693,16 @@ function applyFx(k){
   sfx.curse();
 }
 function drawBossBar(){
-  const b=enemies.find(e=>e.alive&&TYPES[e.t].boss&&e.alert);
-  if(!b)return;
-  const t=TYPES[b.t],w=180,x=(W-w)/2,y=14;
-  ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(x-2,y-2,w+4,12);
-  ctx.fillStyle='#d9382a';ctx.fillRect(x,y,w*Math.max(0,b.hp)/(b.max||b.hp),8);
-  ctx.font='bold 10px ui-monospace,Menlo,Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillStyle='#000';ctx.fillText(t.name.toUpperCase(),W/2+1,y+12);
-  ctx.fillStyle='#ffffff';ctx.fillText(t.name.toUpperCase(),W/2,y+11);
-  if(bossGuard(b)<.5){ctx.font='bold 9px ui-monospace,Menlo,Consolas,monospace';ctx.fillStyle='#ff9a5a';ctx.fillText('SHIELDED: CLOSE IN AND KEEP IT IN SIGHT',W/2,y+24)}
+  const bs=enemies.filter(e=>e.alive&&TYPES[e.t].boss&&e.alert&&!inSealedRoom(e.x,e.y));
+  if(!bs.length)return;
+  bs.forEach((b,k)=>{
+    const t=TYPES[b.t],w=180,x=(W-w)/2,y=14+k*28;
+    ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(x-2,y-2,w+4,12);
+    ctx.fillStyle='#d9382a';ctx.fillRect(x,y,w*Math.max(0,b.hp)/(b.max||b.hp),8);
+    ctx.font='bold 10px ui-monospace,Menlo,Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillStyle='#000';ctx.fillText(t.name.toUpperCase(),W/2+1,y+12);
+    ctx.fillStyle='#ffffff';ctx.fillText(t.name.toUpperCase(),W/2,y+11);
+  });
   ctx.textAlign='left';ctx.textBaseline='middle';
 }
 function roundTag(n){
@@ -1502,9 +1503,9 @@ function killEnemy(e){
     if(lvl===11&&victoryT<=0&&!enemies.some(x=>x.alive&&TYPES[x.t].boss))victoryT=2.6;
   }
 }
-function dmgEnemy(e,amount){
+function dmgEnemy(e,amount,plasma){
   if(!e.alive)return;
-  e.hp-=amount*bossGuard(e);e.hurt=.12;wake(e);
+  e.hp-=amount*bossGuard(e,plasma);e.hurt=.12;wake(e);
   if(e.hp<=0)killEnemy(e);
 }
 function fireRocket(){spawnProj('rocket')}
@@ -1779,7 +1780,7 @@ function projHit(q,tgt){
   const ix=tgt?q.x:q.px,iy=tgt?q.y:q.py;
   if(q.kind==='plasma'){
     blasts.push({x:ix,y:iy,z:q.z,t:0,max:.2,sm:.7,img:sprPlasma});
-    if(tgt)dmgEnemy(tgt,WEAPONS[5].dmg()*[1.3,.3,.22,.15][Math.min(3,q.bounces)]);
+    if(tgt)dmgEnemy(tgt,WEAPONS[5].dmg()*[1.3,.3,.22,.15][Math.min(3,q.bounces)],true);
   }else if(q.kind==='rocket')explodeRocket(ix,iy,tgt,q.z);
   else explodeBFG(ix,iy,tgt,q.z);
 }
@@ -2374,6 +2375,10 @@ function inSealedRoomOld(x,y){
 function activatePanel(cx,cy){
   const g=gates.find(q=>q.panels.some(pn=>pn.x===cx&&pn.y===cy));
   if(!g||g.sinking||g.open)return;
+  if(lvl===11&&mode==='crypt'){
+    const busy=gates.some(o=>o.R!==g.R&&(o.open||o.sinking)&&enemies.some(e=>e.alive&&TYPES[e.t].boss&&e.x>=o.R.x&&e.x<o.R.x+o.R.w&&e.y>=o.R.y&&e.y<o.R.y+o.R.h));
+    if(busy){banner={t:2.2,text:'DEFEAT THE OPEN BOSS FIRST'};sfx.curse();return}
+  }
   g.panels.forEach(pn=>{map[pn.y*MW+pn.x]=8});g.sinking=true;g.t=0;
   sfx.panel();sfx.rumble();
   banner={t:2.2,text:'DOOR OPENING'};
@@ -2398,10 +2403,10 @@ function updateGates(dt){
 function texFor(hit){
   return hit===4?texs[3+(Math.floor(T*8)%3)]:hit===5?texs[6]:hit===6?texs[7]:hit===7?texs[8]:hit===8?texs[9]:hit>=10?signs[hit-10]:wallTex[clamp(hit-1,0,2)];
 }
-function bossGuard(e){
-  if(!TYPES[e.t].boss)return 1;
+function bossGuard(e,plasma){
+  if(!plasma||!TYPES[e.t].boss)return 1;
   const d=Math.hypot(e.x-p.x,e.y-p.y);
-  let f=d<=3?1:Math.max(.12,1-(d-3)/9*.88);
+  let f=d<=5?1:Math.max(.15,1-(d-5)/7*.85);
   if(!los(e.x,e.y,p.x,p.y))f*=.02;
   return f;
 }
@@ -2444,7 +2449,7 @@ function dropLoot(e){
 }
 let lastAlertT=-1;
 function wake(e){
-  if(e.alert||ghost)return;
+  if(e.alert||ghost||inSealedRoom(e.x,e.y))return;
   e.alert=true;
   if(T-lastAlertT<.12)return;
   lastAlertT=T;sfx.alert(e);
@@ -2475,7 +2480,7 @@ function fire(){
       mult=bd<=1.6?2:bd<=6?2-(bd-1.6)/4.4:bd<=14?1-(bd-6)/8*.55:.45;
       if(bossT)mult=1+(mult-1)*.5;
     }
-    best.hp-=wp.dmg()*mult*bossGuard(best);best.hurt=.12;wake(best);
+    best.hp-=wp.dmg()*mult;best.hurt=.12;wake(best);
     if(best.hp<=0)killEnemy(best);else{if(p.w===1||mult>=1.8)sfx.thud();else sfx.hit()}
   }else if(p.w!==1&&bd>=1e9){impactSpark(lim,dx,dy,p.w===3?1.6:1)}
 }
@@ -2559,7 +2564,7 @@ function update(dt){
   for(const e of enemies){
     if(!e.alive)continue;
     e.hurt-=dt;e.cd-=dt;
-    if(e.burn>0){e.burn-=dt;e.hp-=dt*8*bossGuard(e);if(e.hp<=0){killEnemy(e);continue}}
+    if(e.burn>0){e.burn-=dt;e.hp-=dt*8;if(e.hp<=0){killEnemy(e);continue}}
     if(e.leave){
       if(map[e.leave.door]!==0)continue;
       const lt=TYPES[e.t],lx=e.leave.x-e.x,ly=e.leave.y-e.y,ld=Math.hypot(lx,ly);
