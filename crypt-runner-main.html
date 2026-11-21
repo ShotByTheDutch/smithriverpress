@@ -81,6 +81,15 @@ body.touch[data-state="play"] #touch{display:block}
 .help-body h2{margin:.9em 0 .25em;font-size:1.05em;color:var(--accent);letter-spacing:.06em}
 .help-body ul{margin:.2em 0;padding-left:1.2em}
 .help-body li{margin:.25em 0}
+#vic{position:absolute;inset:0;background:rgba(0,0,0,.9);display:flex;flex-direction:column;align-items:center;padding:3%}
+#vic[hidden]{display:none}
+#vic h1{margin:0 0 8px;font-size:clamp(18px,4.4vw,34px);letter-spacing:.08em;color:#ffd23a;text-align:center}
+.crawl{position:relative;flex:1;width:min(92%,560px);overflow:hidden}
+.crawl-inner{position:absolute;left:0;right:0;top:0;text-align:center;color:#eadfca;font-size:clamp(12px,2.6vw,18px);line-height:1.8}
+.crawl-inner h2{margin:1.4em 0 .3em;font-size:1.1em;color:#ffd23a;letter-spacing:.06em}
+.crawl-inner p{margin:.4em 0}
+#vicBtn{margin-top:10px;font:inherit;font-weight:700;padding:.7em 1.6em;background:var(--accent);color:var(--btnfg);border:0;cursor:pointer}
+@media (prefers-reduced-motion: reduce){.crawl{overflow:auto}.crawl-inner{position:static}}
 .card button.alt.on{background:var(--accent);color:var(--btnfg);border-color:var(--accent)}
 #rows{display:grid;gap:4px;width:100%}
 .row{display:grid;grid-template-columns:1fr 84px 84px;gap:6px;align-items:center;text-align:left;font-size:clamp(10px,2vw,14px)}
@@ -164,6 +173,7 @@ body.dev #ghostBtn{display:block}
         <h2>Bosses (crypt round 5 and up)</h2>
         <ul>
           <li><b>Mirror King</b> reverses your left and right controls. <b>The Blackout</b> turns the lights nearly off. <b>The Prism</b> warps and recolors the view. <b>Molasses Golem</b> slows you down. Their orbs do damage and apply the effect, so dodge them.</li>
+          <li>Bosses shrug off shots from far away or out of sight, taking only a sliver of damage, so close in and keep them in view. Round 11 is the grand finale: all four bosses, each sealed in its own room. Defeat them all to clear the crypt.</li>
         </ul>
         <h2>Weapons (keys 1 to 9 and 0)</h2>
         <ul>
@@ -190,6 +200,11 @@ body.dev #ghostBtn{display:block}
       </div>
       <button type="button" id="helpDone">Done</button>
     </div>
+  </div>
+  <div id="vic" hidden>
+    <h1>THE CRYPT IS CLEARED</h1>
+    <div class="crawl"><div id="crawlInner" class="crawl-inner"></div></div>
+    <button type="button" id="vicBtn">Play again</button>
   </div>
 </div>
 <div id="hint">WASD to move · mouse or ←/→ to turn · click or Space to fire · P pauses · M mutes</div>
@@ -618,29 +633,44 @@ function genLevel(){
       const x0=Math.min(a.cx,b.cx),x1=Math.max(a.cx,b.cx);carve(x0,a.cy,x1-x0+1,1);
       const y0=Math.min(a.cy,b.cy),y1=Math.max(a.cy,b.cy);carve(b.cx,y0,1,y1-y0+1);
     };
-    for(let i=1;i<rooms.length;i++)link(rooms[i-1],rooms[i]);
-    if(rooms.length>3)link(rooms[0],rooms[2+rnd(rooms.length-2)]);
+    if(lvl===11&&rooms.length>=8){
+      const m=rooms.length-4;
+      for(let i=1;i<m;i++)link(rooms[i-1],rooms[i]);
+      for(let b=m;b<rooms.length;b++){
+        let bi=0,bd=1e9;
+        for(let i=0;i<m;i++){const d=Math.abs(rooms[i].cx-rooms[b].cx)+Math.abs(rooms[i].cy-rooms[b].cy);if(d<bd){bd=d;bi=i}}
+        link(rooms[bi],rooms[b]);
+      }
+    }else{
+      for(let i=1;i<rooms.length;i++)link(rooms[i-1],rooms[i]);
+      if(rooms.length>3)link(rooms[0],rooms[2+rnd(rooms.length-2)]);
+    }
     rooms.forEach(r=>{ // pillars in big rooms
       if(r.w>=6&&r.h>=6){const px=r.x+1+rnd(r.w-2),py=r.y+1+rnd(r.h-2);if(px!==r.cx&&py!==r.cy)map[py*MW+px]=2}
     });
-    sealOk=rooms.length>=4?(sealPortalRoom(rooms)||(++tries>300)):true;
-  }while(rooms.length<4||!sealOk);
+    sealOk=rooms.length>=(lvl===11?8:4)?((lvl===11?sealRooms(rooms,rooms.slice(-4)):sealPortalRoom(rooms))||(++tries>300)):true;
+  }while(rooms.length<(lvl===11?8:4)||!sealOk);
 
   revealed=new Uint8Array(MW*MH);enemies=[];pickups=[];shots=[];
   const r0=rooms[0],rl=rooms[rooms.length-1];
   p.x=r0.cx+.5;p.y=r0.cy+.5;p.a=Math.atan2(rooms[1].cy-r0.cy,rooms[1].cx-r0.cx);
-  exitPos={x:rl.cx+.5,y:rl.cy+.5};
+  exitPos=lvl===11?{x:-50,y:-50}:{x:rl.cx+.5,y:rl.cy+.5};
   const spot=r=>({x:r.x+.5+Math.random()*(r.w-1),y:r.y+.5+Math.random()*(r.h-1)});
   const free=(q)=>!solid(q.x,q.y)&&Math.hypot(q.x-exitPos.x,q.y-exitPos.y)>1.2;
-  for(let i=1;i<rooms.length;i++){
-    const r=rooms[i],cnt=1+((lvl/2)|0)+rnd(2);
+  for(let i=1;i<(lvl===11?rooms.length-4:rooms.length);i++){
+    const r=rooms[i],cnt=lvl===11?2+rnd(2):1+((lvl/2)|0)+rnd(2);
     for(let k=0;k<cnt;k++){
       const q=spot(r);if(!free(q))continue;
       const t=pickCrypt();
       enemies.push({x:q.x,y:q.y,t,hp:TYPES[t].hp,alive:true,alert:false,cd:Math.random()*1.5,hurt:0,ph:Math.random()*6,side:0});
     }
   }
-  if(lvl>=5){
+  if(lvl===11){
+    for(let k=0;k<4;k++){
+      const bt=4+k,rr=rooms[rooms.length-4+k],bh=TYPES[bt].hp+360;
+      enemies.push({x:rr.cx+.5,y:rr.cy+.5,t:bt,hp:bh,max:bh,alive:true,alert:false,cd:2+Math.random(),hurt:0,ph:Math.random()*6,side:0});
+    }
+  }else if(lvl>=5){
     const nb=lvl>=10?2:1;
     for(let k=0;k<nb;k++){
       const bt=lvl<=8?lvl-1:4+rnd(4),rr=rooms[Math.max(1,rooms.length-1-k)],bh=TYPES[bt].hp+Math.max(0,lvl-5)*60;
@@ -650,7 +680,7 @@ function genLevel(){
   const need={2:2,3:1,4:3}[lvl];
   if(need!==undefined&&enemies.length&&!enemies.some(e=>e.t===need)){const e=enemies[rnd(enemies.length)];e.t=need;e.hp=TYPES[need].hp}
   const nE=enemies.length,nH=Math.max(2,Math.ceil(nE/3)),nA=Math.max(2,Math.ceil(nE/3.5));
-  for(let n=0;n<nH+nA;n++){const q=spot(rooms[1+rnd(rooms.length-1)]);if(free(q))pickups.push({x:q.x,y:q.y,k:n<nH?'h':'a'})}
+  for(let n=0;n<nH+nA;n++){const q=spot(rooms[1+rnd((lvl===11?rooms.length-4:rooms.length)-1)]);if(free(q))pickups.push({x:q.x,y:q.y,k:n<nH?'h':'a'})}
   const q=spot(r0);if(!solid(q.x,q.y))pickups.push({x:q.x,y:q.y,k:'a'});
   placePads();
 }
@@ -671,10 +701,11 @@ function drawBossBar(){
   ctx.font='bold 10px ui-monospace,Menlo,Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='top';
   ctx.fillStyle='#000';ctx.fillText(t.name.toUpperCase(),W/2+1,y+12);
   ctx.fillStyle='#ffffff';ctx.fillText(t.name.toUpperCase(),W/2,y+11);
+  if(bossGuard(b)<.5){ctx.font='bold 9px ui-monospace,Menlo,Consolas,monospace';ctx.fillStyle='#ff9a5a';ctx.fillText('SHIELDED: CLOSE IN AND KEEP IT IN SIGHT',W/2,y+24)}
   ctx.textAlign='left';ctx.textBaseline='middle';
 }
 function roundTag(n){
-  return ({2:': BRUTES',3:': CASTERS',4:': MADSTONES',5:': MIRROR KING',6:': THE BLACKOUT',7:': THE PRISM',8:': MOLASSES GOLEM'})[n]||(n>8?': BOSS ROUND':'');
+  return ({2:': BRUTES',3:': CASTERS',4:': MADSTONES',5:': MIRROR KING',6:': THE BLACKOUT',7:': THE PRISM',8:': MOLASSES GOLEM',11:': THE GRAND ROUND'})[n]||(n>8?': BOSS ROUND':'');
 }
 const SIGN_STYLES={street:['#1e6b3a','#ffffff','#ffffff'],wood:['#6b4423','#f4e4c1','#3b2412'],warn:['#f1c40f','#111111','#111111'],brass:['#1b2a4a','#f0d27a','#f0d27a']};
 let signs=[],signMeta=[],signFlicker=[],signLight=[];const signCache={};
@@ -844,7 +875,7 @@ function bassName(x,y){
   return 'Smith River bank';
 }
 function genBassett(){
-  MW=46;MH=33;TYPES=TOWN_TYPES;STOPS=BASS_STOPS;place='bassett';gates=[];sealRoom=null;setTheme(0);
+  MW=46;MH=33;TYPES=TOWN_TYPES;STOPS=BASS_STOPS;place='bassett';sealRoomList=[];gates=[];sealRoom=null;setTheme(0);
   map=new Uint8Array(MW*MH);
   const fill=(x0,y0,x1,y1,v)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)map[y*MW+x]=v};
   fill(0,0,MW-1,MH-1,3);
@@ -885,7 +916,7 @@ function genBassett(){
   placePads();
 }
 function genTown(){
-  MW=40;MH=30;TYPES=TOWN_TYPES;STOPS=MART_STOPS;place='mart';train=null;gates=[];sealRoom=null;setTheme(0);
+  MW=40;MH=30;TYPES=TOWN_TYPES;STOPS=MART_STOPS;place='mart';train=null;sealRoomList=[];gates=[];sealRoom=null;setTheme(0);
   map=new Uint8Array(MW*MH);
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
     const bx=TOWN.vs.filter(v=>x>v[2]).length,by=TOWN.hs.filter(h=>y>h[2]).length;
@@ -959,6 +990,7 @@ function lockPointer(){
   try{const r=cv.requestPointerLock();if(r&&r.catch)r.catch(err=>{lockFailed=true;lockErr=String((err&&err.name)||'error')+(err&&err.message?': '+String(err.message).replace(/^Failed to execute '[^']*' on '[^']*':\s*/,'').slice(0,160):'');if(/immediately|exited/i.test(lockErr)){setTimeout(()=>{if(state==='play'&&document.pointerLockElement!==cv){lastLockReq=-1e9;lockFailed=false;lockPointer()}},1400)}})}catch(e){lockFailed=true;lockErr=String((e&&e.name)||'error')}
 }
 function newGame(m,round){
+  victoryT=0;vicEl.hidden=true;
   if(m==='crypt')mode='crypt';
   else if(m==='town'||m==='bassett'){mode='town';place=m==='bassett'?'bassett':'mart'}
   lvl=round||1;kills=0;stopIdx=0;p.hp=100;p.ammo=mode==='town'?70:60;if(!round){for(let i=3;i<=10;i++)owned[i]=allW;p.w=2;p.armor=0}p.cool=0;p.recoil=0;p.flash=0;
@@ -1089,13 +1121,14 @@ ovT.addEventListener('click',()=>{
   if(tapN>=7){tapN=0;unlockDev()}
 });
 ovStay.addEventListener('click',()=>{hideOv();setState('play');lockPointer()});
-const helpEl=$('help');
+const helpEl=$('help'),vicEl=$('vic');
 function openHelp(){ov.hidden=true;helpEl.hidden=false}
 function closeHelp(){helpEl.hidden=true;ov.hidden=false}
 ovH.addEventListener('click',openHelp);
 $('helpDone').addEventListener('click',closeHelp);
+$('vicBtn').addEventListener('click',()=>{vicEl.hidden=true;audioInit();newGame('crypt')});
 $('devDone').addEventListener('click',closeDev);
-for(let n=1;n<=10;n++){
+for(let n=1;n<=11;n++){
   const b=document.createElement('button');b.type='button';b.className='slot';b.textContent=String(n);
   b.addEventListener('click',()=>{devEl.hidden=true;audioInit();newGame('crypt',n)});
   $('devRounds').appendChild(b);
@@ -1387,7 +1420,7 @@ function placeSecrets(){
 function checkSecrets(dt){
   for(const s of secrets){
     if(s.sinking){
-      s.t+=dt;const u=Math.min(1,s.t/1.6),h=1-u*u*(3-2*u);
+      s.t+=dt;const u=Math.min(1,s.t/(s.ambush?.5:1.6)),h=1-u*u*(3-2*u);
       if(h<=0){s.sinking=false;s.open=true;map[s.y*MW+s.x]=0;sinkH.delete(s.y*MW+s.x)}else sinkH.set(s.y*MW+s.x,h);
       continue;
     }
@@ -1398,7 +1431,7 @@ function checkSecrets(dt){
       if(ghost||dAmb>=2.3||closing<.01||closing>.5)continue;
       if(!los(p.x,p.y,s.ox+.5,s.oy+.5))continue;
       s.sinking=true;s.t=0;s.cells.forEach(i=>{hid[i]=0});
-      s.released=true;enemies.push({x:s.nx,y:s.ny,t:s.mt,hp:TYPES[s.mt].hp,alive:true,alert:true,secret:true,cd:1,hurt:0,ph:Math.random()*6,side:0});
+      s.released=true;enemies.push({x:s.nx,y:s.ny,t:s.mt,hp:TYPES[s.mt].hp,alive:true,alert:true,secret:true,cd:1,hurt:0,ph:Math.random()*6,side:0,leave:{x:s.ox+.5,y:s.oy+.5,door:s.y*MW+s.x}});
       sfx.ambush();banner={t:1.4,text:'AMBUSH!'};
       continue;
     }
@@ -1464,11 +1497,14 @@ function aimTarget(maxR,tol){
 function killEnemy(e){
   if(!e.alive)return;
   e.alive=false;kills++;sfx.die();dropLoot(e);
-  if(mode==='crypt'&&TYPES[e.t].boss)banner={t:2,text:'BOSS DOWN'};
+  if(mode==='crypt'&&TYPES[e.t].boss){
+    banner={t:2,text:'BOSS DOWN'};
+    if(lvl===11&&victoryT<=0&&!enemies.some(x=>x.alive&&TYPES[x.t].boss))victoryT=2.6;
+  }
 }
 function dmgEnemy(e,amount){
   if(!e.alive)return;
-  e.hp-=amount;e.hurt=.12;wake(e);
+  e.hp-=amount*bossGuard(e);e.hurt=.12;wake(e);
   if(e.hp<=0)killEnemy(e);
 }
 function fireRocket(){spawnProj('rocket')}
@@ -1866,7 +1902,7 @@ function hintLines(k){
   }
   if(k==='panel')return [['ACTIVATION PANEL',12,'#ff8a7a'],['SHOOT THE SMALL PANEL TO OPEN THE DOOR BESIDE IT',10,'#ffffff']];
   if(k==='door'){
-    const inside=sealRoom&&p.x>=sealRoom.x&&p.x<sealRoom.x+sealRoom.w&&p.y>=sealRoom.y&&p.y<sealRoom.y+sealRoom.h;
+    const inside=sealRoomList.some(R=>p.x>=R.x&&p.x<R.x+R.w&&p.y>=R.y&&p.y<R.y+R.h);
     return inside
       ?[['SEALED DOOR',12,'#c9b8a0'],['SHOOT THE PANEL BESIDE IT TO OPEN IT FROM INSIDE.',10,'#ffffff']]
       :[['SEALED DOOR',12,'#c9b8a0'],['THE PORTAL ROOM IS BEHIND IT. SHOOT THE PANEL NEXT TO IT.',10,'#ffffff'],['YOU CANNOT SEE INSIDE UNTIL IT OPENS.',10,'#cfd6e0']];
@@ -2007,7 +2043,7 @@ function impactSpark(lim,dx,dy,k){
   blasts.push({x,y,z,t:0,max:.18,sm:.22*(k||1),img:sprSpark});
   if(Math.random()<.5)blasts.push({x:x+(Math.random()-.5)*.15,y:y+(Math.random()-.5)*.15,z:z+(Math.random()-.5)*.1,t:0,max:.25,sm:.14,img:sprSpark});
 }
-let gates=[],sealRoom=null;
+let gates=[],sealRoom=null,sealRoomList=[],victoryT=0;
 const panelBase=new Map(),panelCache={};
 function panelCanvas(lit,type){
   const key=curTheme*10+type*2+(lit?1:0);
@@ -2023,7 +2059,191 @@ function panelCanvas(lit,type){
   g.fillStyle=lit?'#6bff9a':'#ff5a4a';g.fillRect(30,23,4,3);
   panelCache[key]=c;return c;
 }
-function sealPortalRoom(rooms){
+function sealPortalRoom(rooms){return sealRooms(rooms,[rooms[rooms.length-1]])}
+function sealRooms(rooms,targets){
+  gates=[];sealRoom=null;sealRoomList=[];panelBase.clear();
+  const isOpen=(x,y)=>x>=1&&y>=1&&x<MW-1&&y<MH-1&&map[y*MW+x]===0;
+  const isWall=(x,y)=>x>=1&&y>=1&&x<MW-1&&y<MH-1&&map[y*MW+x]>=1&&map[y*MW+x]<=3;
+  const used=new Set(),made=[];
+  for(const R of targets){
+    const inR=(x,y)=>x>=R.x&&x<R.x+R.w&&y>=R.y&&y<R.y+R.h;
+    const ent=[];
+    for(let y=R.y-1;y<=R.y+R.h;y++)for(let x=R.x-1;x<=R.x+R.w;x++){
+      if(x<1||y<1||x>=MW-1||y>=MH-1||inR(x,y)||map[y*MW+x]!==0)continue;
+      for(const [nx,ny] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        if(inR(x+nx,y+ny)){ent.push({x,y,nx,ny});break}
+      }
+    }
+    if(!ent.length)return false;
+    const groups=[];
+    for(const e of ent){
+      const hits=groups.filter(q=>q.nx===e.nx&&q.ny===e.ny&&q.cells.some(c=>Math.abs(c.x-e.x)+Math.abs(c.y-e.y)<=2));
+      if(!hits.length){groups.push({nx:e.nx,ny:e.ny,cells:[e]});continue}
+      const first=hits[0];first.cells.push(e);
+      for(let h=1;h<hits.length;h++){first.cells.push(...hits[h].cells);groups.splice(groups.indexOf(hits[h]),1)}
+    }
+    if(groups.length>3)return false;
+    for(const gr of groups){
+      const nx=gr.nx,ny=gr.ny,perps=[[-ny,nx],[ny,-nx]];
+      if(Math.random()<.5)perps.reverse();
+      const cells=gr.cells.map(e=>({dx:e.x,dy:e.y,ax:e.x-nx,ay:e.y-ny,ix:e.x+nx,iy:e.y+ny}));
+      if(!cells.every(c=>isOpen(c.ax,c.ay)&&!inR(c.ax,c.ay)))return false;
+      const comp=cells.map((_,i)=>i);
+      const find=i=>comp[i]===i?i:(comp[i]=find(comp[i]));
+      for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++)
+        if(Math.abs(cells[i].ax-cells[j].ax)+Math.abs(cells[i].ay-cells[j].ay)===1)comp[find(j)]=find(i);
+      const need=new Set(cells.map((_,i)=>find(i)));
+      const cand=[];
+      for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
+        const a=cells[i],b=cells[j];
+        if(Math.abs(a.ax-b.ax)+Math.abs(a.ay-b.ay)===2&&(a.ax+b.ax)%2===0&&(a.ay+b.ay)%2===0)
+          cand.push({x:(a.ax+b.ax)/2,y:(a.ay+b.ay)/2,serve:[find(i),find(j)],oi:i});
+      }
+      for(let i=0;i<cells.length;i++)for(const [px,py] of perps)cand.push({x:cells[i].ax+px,y:cells[i].ay+py,serve:[find(i)],oi:i});
+      const panels=[];
+      while(need.size){
+        let best=null,bs=0;
+        for(const c of cand){
+          if(!isWall(c.x,c.y)||used.has(c.y*MW+c.x))continue;
+          const s=c.serve.filter(k=>need.has(k)).length;
+          if(s>bs){bs=s;best=c}
+        }
+        if(!best)return false;
+        best.serve.forEach(k=>need.delete(k));
+        used.add(best.y*MW+best.x);
+        panels.push({x:best.x,y:best.y,v:map[best.y*MW+best.x],ox:cells[best.oi].ax,oy:cells[best.oi].ay,side:'out'});
+      }
+      const icand=[];
+      for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
+        const a=cells[i],b=cells[j];
+        if(Math.abs(a.dx-b.dx)+Math.abs(a.dy-b.dy)===2&&(a.dx+b.dx)%2===0&&(a.dy+b.dy)%2===0)icand.push({x:(a.dx+b.dx)/2,y:(a.dy+b.dy)/2});
+      }
+      for(let t=1;t<=3;t++)for(const c of cells)for(const [px,py] of perps)icand.push({x:c.dx+px*t,y:c.dy+py*t});
+      let inP=null;
+      for(const c of icand){
+        const ox=c.x+nx,oy=c.y+ny;
+        if(isWall(c.x,c.y)&&!used.has(c.y*MW+c.x)&&inR(ox,oy)&&isOpen(ox,oy)){inP={x:c.x,y:c.y,v:map[c.y*MW+c.x],ox,oy,side:'in'};break}
+      }
+      if(!inP)return false;
+      used.add(inP.y*MW+inP.x);panels.push(inP);
+      made.push({cells,panels,sinking:false,open:false,t:0,R});
+    }
+  }
+  made.forEach(g=>{
+    g.cells.forEach(c=>{map[c.dy*MW+c.dx]=6});
+    g.panels.forEach(pn=>{map[pn.y*MW+pn.x]=7;panelBase.set(pn.y*MW+pn.x,pn.v)});
+  });
+  const flood=openDoors=>{
+    const seen=new Uint8Array(MW*MH),st=[rooms[0].cy*MW+rooms[0].cx];
+    seen[st[0]]=1;
+    while(st.length){
+      const c=st.pop(),cx=c%MW,cy=(c/MW)|0;
+      for(const [nx,ny] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const x=cx+nx,y=cy+ny;
+        if(x<0||y<0||x>=MW||y>=MH)continue;
+        const i=y*MW+x,v=map[i];
+        if(seen[i]||!(v===0||(openDoors&&v===6)))continue;
+        seen[i]=1;st.push(i);
+      }
+    }
+    return seen;
+  };
+  const closed=flood(false);
+  for(const r of rooms){if(targets.includes(r))continue;if(!closed[r.cy*MW+r.cx])return false}
+  const opened=flood(true);
+  for(const R of targets)if(!opened[R.cy*MW+R.cx])return false;
+  gates=made;sealRoomList=targets.slice();sealRoom=targets[0];
+  return true;
+}
+function sealPortalRoomV3(rooms){
+  gates=[];sealRoom=null;panelBase.clear();
+  const R=rooms[rooms.length-1];
+  const inR=(x,y)=>x>=R.x&&x<R.x+R.w&&y>=R.y&&y<R.y+R.h;
+  const isOpen=(x,y)=>x>=1&&y>=1&&x<MW-1&&y<MH-1&&map[y*MW+x]===0;
+  const isWall=(x,y)=>x>=1&&y>=1&&x<MW-1&&y<MH-1&&map[y*MW+x]>=1&&map[y*MW+x]<=3;
+  const ent=[];
+  for(let y=R.y-1;y<=R.y+R.h;y++)for(let x=R.x-1;x<=R.x+R.w;x++){
+    if(x<1||y<1||x>=MW-1||y>=MH-1||inR(x,y)||map[y*MW+x]!==0)continue;
+    for(const [nx,ny] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      if(inR(x+nx,y+ny)){ent.push({x,y,nx,ny});break}
+    }
+  }
+  if(!ent.length)return false;
+  const groups=[];
+  for(const e of ent){
+    const hits=groups.filter(q=>q.nx===e.nx&&q.ny===e.ny&&q.cells.some(c=>Math.abs(c.x-e.x)+Math.abs(c.y-e.y)<=2));
+    if(!hits.length){groups.push({nx:e.nx,ny:e.ny,cells:[e]});continue}
+    const first=hits[0];first.cells.push(e);
+    for(let h=1;h<hits.length;h++){first.cells.push(...hits[h].cells);groups.splice(groups.indexOf(hits[h]),1)}
+  }
+  if(groups.length>3)return false;
+  const used=new Set(),made=[];
+  for(const gr of groups){
+    const nx=gr.nx,ny=gr.ny,perps=[[-ny,nx],[ny,-nx]];
+    if(Math.random()<.5)perps.reverse();
+    const cells=gr.cells.map(e=>({dx:e.x,dy:e.y,ax:e.x-nx,ay:e.y-ny,ix:e.x+nx,iy:e.y+ny}));
+    if(!cells.every(c=>isOpen(c.ax,c.ay)&&!inR(c.ax,c.ay)))return false;
+    const comp=cells.map((_,i)=>i);
+    const find=i=>comp[i]===i?i:(comp[i]=find(comp[i]));
+    for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++)
+      if(Math.abs(cells[i].ax-cells[j].ax)+Math.abs(cells[i].ay-cells[j].ay)===1)comp[find(j)]=find(i);
+    const need=new Set(cells.map((_,i)=>find(i)));
+    const cand=[];
+    for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
+      const a=cells[i],b=cells[j];
+      if(Math.abs(a.ax-b.ax)+Math.abs(a.ay-b.ay)===2&&(a.ax+b.ax)%2===0&&(a.ay+b.ay)%2===0)
+        cand.push({x:(a.ax+b.ax)/2,y:(a.ay+b.ay)/2,serve:[find(i),find(j)],oi:i});
+    }
+    for(let i=0;i<cells.length;i++)for(const [px,py] of perps)cand.push({x:cells[i].ax+px,y:cells[i].ay+py,serve:[find(i)],oi:i});
+    const panels=[];
+    while(need.size){
+      let best=null,bs=0;
+      for(const c of cand){
+        if(!isWall(c.x,c.y)||used.has(c.y*MW+c.x))continue;
+        const s=c.serve.filter(k=>need.has(k)).length;
+        if(s>bs){bs=s;best=c}
+      }
+      if(!best)return false;
+      best.serve.forEach(k=>need.delete(k));
+      used.add(best.y*MW+best.x);
+      panels.push({x:best.x,y:best.y,v:map[best.y*MW+best.x],ox:cells[best.oi].ax,oy:cells[best.oi].ay,side:'out'});
+    }
+    const icand=[];
+    for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
+      const a=cells[i],b=cells[j];
+      if(Math.abs(a.dx-b.dx)+Math.abs(a.dy-b.dy)===2&&(a.dx+b.dx)%2===0&&(a.dy+b.dy)%2===0)icand.push({x:(a.dx+b.dx)/2,y:(a.dy+b.dy)/2});
+    }
+    for(let t=1;t<=3;t++)for(const c of cells)for(const [px,py] of perps)icand.push({x:c.dx+px*t,y:c.dy+py*t});
+    let inP=null;
+    for(const c of icand){
+      const ox=c.x+nx,oy=c.y+ny;
+      if(isWall(c.x,c.y)&&!used.has(c.y*MW+c.x)&&inR(ox,oy)&&isOpen(ox,oy)){inP={x:c.x,y:c.y,v:map[c.y*MW+c.x],ox,oy,side:'in'};break}
+    }
+    if(!inP)return false;
+    used.add(inP.y*MW+inP.x);panels.push(inP);
+    made.push({cells,panels,sinking:false,open:false,t:0});
+  }
+  made.forEach(g=>{
+    g.cells.forEach(c=>{map[c.dy*MW+c.dx]=6});
+    g.panels.forEach(pn=>{map[pn.y*MW+pn.x]=7;panelBase.set(pn.y*MW+pn.x,pn.v)});
+  });
+  const seen=new Uint8Array(MW*MH),st=[rooms[0].cy*MW+rooms[0].cx];
+  seen[st[0]]=1;
+  while(st.length){
+    const c=st.pop(),cx=c%MW,cy=(c/MW)|0;
+    for(const [nx,ny] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      const x=cx+nx,y=cy+ny;
+      if(x<0||y<0||x>=MW||y>=MH)continue;
+      const i=y*MW+x;
+      if(seen[i]||map[i]!==0)continue;
+      seen[i]=1;st.push(i);
+    }
+  }
+  for(let i=0;i<rooms.length-1;i++)if(!seen[rooms[i].cy*MW+rooms[i].cx])return false;
+  gates=made;sealRoom={x:R.x,y:R.y,w:R.w,h:R.h};
+  return true;
+}
+function sealPortalRoomV2(rooms){
   gates=[];sealRoom=null;panelBase.clear();
   const R=rooms[rooms.length-1];
   const inR=(x,y)=>x>=R.x&&x<R.x+R.w&&y>=R.y&&y<R.y+R.h;
@@ -2141,6 +2361,12 @@ function sealPortalRoomOld(rooms){
   return true;
 }
 function inSealedRoom(x,y){
+  for(const R of sealRoomList){
+    if(x>=R.x&&x<R.x+R.w&&y>=R.y&&y<R.y+R.h)return gates.filter(g=>g.R===R).every(g=>!g.open&&!g.sinking);
+  }
+  return false;
+}
+function inSealedRoomOld(x,y){
   if(!sealRoom||!gates.length)return false;
   if(x<sealRoom.x||x>=sealRoom.x+sealRoom.w||y<sealRoom.y||y>=sealRoom.y+sealRoom.h)return false;
   return gates.every(g=>!g.open&&!g.sinking);
@@ -2171,6 +2397,30 @@ function updateGates(dt){
 }
 function texFor(hit){
   return hit===4?texs[3+(Math.floor(T*8)%3)]:hit===5?texs[6]:hit===6?texs[7]:hit===7?texs[8]:hit===8?texs[9]:hit>=10?signs[hit-10]:wallTex[clamp(hit-1,0,2)];
+}
+function bossGuard(e){
+  if(!TYPES[e.t].boss)return 1;
+  const d=Math.hypot(e.x-p.x,e.y-p.y);
+  let f=d<=3?1:Math.max(.12,1-(d-3)/9*.88);
+  if(!los(e.x,e.y,p.x,p.y))f*=.02;
+  return f;
+}
+function victory(){
+  setState('dead');firing=false;
+  try{document.exitPointerLock()}catch(e){}
+  sfx.portal();setTimeout(()=>sfx.portal(),700);
+  best=Math.max(best,11);try{localStorage.setItem('crypt-runner-best',String(best))}catch(e){}
+  const inner=$('crawlInner');
+  inner.innerHTML='<h2>THE BOSSES</h2><p>The Mirror King lies shattered.</p><p>The Blackout has finally gone out.</p><p>The Prism bends light no more.</p><p>The Molasses Golem has stopped moving.</p>'
+    +'<h2>THE RUN</h2><p>Eleven levels deep, you hunted down every last thing that lurked below.</p><p>Creatures put down: '+kills+'</p><p>Bosses defeated: 4 of 4</p>'
+    +'<h2>THE CRYPT</h2><p>The torches burn steady now. The signs hang quiet on the walls, and nothing waits behind them any more.</p>'
+    +'<h2>WELL DONE, CRYPT RUNNER</h2><p>Thanks for playing.</p>';
+  vicEl.hidden=false;
+  const crawl=inner.parentElement;
+  if(!reduceFx){
+    const H2=crawl.clientHeight,C=inner.scrollHeight;
+    inner.animate([{transform:'translateY('+H2+'px)'},{transform:'translateY('+(-C)+'px)'}],{duration:Math.max(30000,(H2+C)*42),fill:'forwards',easing:'linear'});
+  }
 }
 function nova(e){
   sfx.nova();
@@ -2225,8 +2475,8 @@ function fire(){
       mult=bd<=1.6?2:bd<=6?2-(bd-1.6)/4.4:bd<=14?1-(bd-6)/8*.55:.45;
       if(bossT)mult=1+(mult-1)*.5;
     }
-    best.hp-=wp.dmg()*mult;best.hurt=.12;wake(best);
-    if(best.hp<=0){best.alive=false;kills++;sfx.die();dropLoot(best);if(mode==='crypt'&&TYPES[best.t].boss)banner={t:2,text:'BOSS DOWN'}}else{if(p.w===1||mult>=1.8)sfx.thud();else sfx.hit()}
+    best.hp-=wp.dmg()*mult*bossGuard(best);best.hurt=.12;wake(best);
+    if(best.hp<=0)killEnemy(best);else{if(p.w===1||mult>=1.8)sfx.thud();else sfx.hit()}
   }else if(p.w!==1&&bd>=1e9){impactSpark(lim,dx,dy,p.w===3?1.6:1)}
 }
 
@@ -2269,6 +2519,7 @@ function chase(e,ux,uy,sp,dt,r){
   }
 }
 function update(dt){
+  if(victoryT>0){victoryT-=dt;if(victoryT<=0){victory();return}}
   p.inv=Math.max(0,(p.inv||0)-dt);for(const k in fx)fx[k]=Math.max(0,fx[k]-dt);
   for(let i=blasts.length-1;i>=0;i--){blasts[i].t+=dt;if(blasts[i].t>blasts[i].max)blasts.splice(i,1)}
   updatePShots(dt);
@@ -2308,7 +2559,13 @@ function update(dt){
   for(const e of enemies){
     if(!e.alive)continue;
     e.hurt-=dt;e.cd-=dt;
-    if(e.burn>0){e.burn-=dt;e.hp-=dt*8;if(e.hp<=0){killEnemy(e);continue}}
+    if(e.burn>0){e.burn-=dt;e.hp-=dt*8*bossGuard(e);if(e.hp<=0){killEnemy(e);continue}}
+    if(e.leave){
+      if(map[e.leave.door]!==0)continue;
+      const lt=TYPES[e.t],lx=e.leave.x-e.x,ly=e.leave.y-e.y,ld=Math.hypot(lx,ly);
+      if(ld<.35)e.leave=null;
+      else{const ls=(lt.sp+lvl*.04)*1.8*dt;tryMove(e,lx/ld*ls,ly/ld*ls,lt.r);continue}
+    }
     if(ghost){e.charge=0;continue}
     const t=TYPES[e.t],dx=p.x-e.x,dy=p.y-e.y,d=Math.hypot(dx,dy)||.001;
     const seen=d<10&&los(e.x,e.y,p.x,p.y);
@@ -2696,7 +2953,7 @@ function render(){
     }
   }
   if(portalHL&&lvl===1&&mode==='crypt'){const rs=1.25+.12*Math.sin(T*5);list.push({x:exitPos.x,y:exitPos.y,img:sprHLRing,sc:rs,vo:.475-rs/2,pulse:true})}
-  list.push({x:exitPos.x,y:exitPos.y,img:(mode!=='crypt'||portalReady())?sprPortal:sprPortalLocked,sc:.95,vo:0,pulse:true});
+  if(exitPos.x>0)list.push({x:exitPos.x,y:exitPos.y,img:(mode!=='crypt'||portalReady())?sprPortal:sprPortalLocked,sc:.95,vo:0,pulse:true});
   const inv=1/(plX*dirY-dirX*plY);
   for(const s of list){
     const rx=s.x-p.x,ry=s.y-p.y;
@@ -2810,7 +3067,7 @@ function drawMinimap(){
     ctx.fillStyle=map[y*MW+x]===4?'#c58cff':map[y*MW+x]===5?'#7fd0ff':map[y*MW+x]===6?'#8a3b2a':map[y*MW+x]===7?'#ff5a4a':map[y*MW+x]===8?'#5aff8a':(map[y*MW+x]||hid[y*MW+x])?'#7a6650':(place==='bassett'&&mode==='town'&&(y===13||y===14)?'#6b5844':'#2d241c');
     ctx.fillRect(ox+x*c,oy+y*c,c,c);
   }
-  if(mode==='town'||ghost||revealed[Math.floor(exitPos.y)*MW+Math.floor(exitPos.x)]){ctx.fillStyle='#4fe3ff';ctx.fillRect(ox+exitPos.x*c-1.5,oy+exitPos.y*c-1.5,4,4)}
+  if(exitPos.x>0&&(mode==='town'||ghost||revealed[Math.floor(exitPos.y)*MW+Math.floor(exitPos.x)])){ctx.fillStyle='#4fe3ff';ctx.fillRect(ox+exitPos.x*c-1.5,oy+exitPos.y*c-1.5,4,4)}
   ctx.fillStyle='#ff4a3a';
   for(const e of enemies)if(e.alive&&Math.hypot(e.x-p.x,e.y-p.y)<6&&!inSealedRoom(e.x,e.y))ctx.fillRect(ox+e.x*c-1,oy+e.y*c-1,3,3);
   if(ghost)for(const e of enemies)if(e.alive&&TYPES[e.t].boss){ctx.fillStyle=Math.floor(T*4)%2?'#ffd23a':'#ff4a3a';ctx.fillRect(ox+e.x*c-2,oy+e.y*c-2,5,5)}
